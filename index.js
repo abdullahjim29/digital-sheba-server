@@ -43,25 +43,30 @@ async function run() {
 
     // get all services
     app.get('/services', async (req, res) => {
-        const services = req.body;
+      const email = req.query.email;
+        let query = {};
+        if (email) {
+          query.provider_email = email;
+        }
         const limit = parseInt(req.query.limit) || 0;
-        const result = await serviceCollection.find(services).limit(limit).toArray();
+        const result = await serviceCollection.find(query).limit(limit).toArray();
         res.send(result)
+      
     })
 
 
     // add service to DB
     app.post('/add-service', async (req, res) => {
-        const newService = req.body;
-        const result = await serviceCollection.insertOne(newService);
-        res.send(result);
+      const newService = req.body;
+      const result = await serviceCollection.insertOne(newService);
+      res.send(result);
     })
 
 
     // get a specific service
     app.get('/services/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await serviceCollection.findOne(query);
       res.send(result);
     })
@@ -74,6 +79,8 @@ async function run() {
       res.send(result);
     })
 
+
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
@@ -85,10 +92,10 @@ run().catch(console.dir);
 
 // create root api
 app.get('/', (req, res) => {
-    res.send('A 11 server running.....!')
+  res.send('A 11 server running.....!')
 })
 
 
 app.listen(port, () => {
-    console.log(`server is running at post ${port}`);
+  console.log(`server is running at post ${port}`);
 })
