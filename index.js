@@ -31,12 +31,15 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
-    // create collection
+    // created service collection
     const serviceCollection = client.db('servicesDB').collection('services');
 
 
-    // all APIs
+    // created service booking collection
+    const bookingCollection = client.db('bookingDB').collection('booking');
 
+
+    // all APIs
 
     // get all services
     app.get('/services', async (req, res) => {
@@ -60,6 +63,14 @@ async function run() {
       const id = req.params.id;
       const query = {_id: new ObjectId(id)}
       const result = await serviceCollection.findOne(query);
+      res.send(result);
+    })
+
+
+    // add booking info to DB
+    app.post('/services/booking', async (req, res) => {
+      const newBookingService = req.body;
+      const result = await bookingCollection.insertOne(newBookingService);
       res.send(result);
     })
 
