@@ -80,6 +80,13 @@ async function run() {
     })
 
 
+    // delete a specific service
+    app.delete('/services/:service', async (req, res) => {
+      const service = req.params.service;
+      const query = {_id: new ObjectId(service)};
+      const result = await serviceCollection.deleteOne(query);
+      res.send(result);
+    })
 
   } finally {
     // Ensures that the client will close when you finish/error
