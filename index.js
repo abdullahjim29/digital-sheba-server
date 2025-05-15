@@ -44,14 +44,14 @@ async function run() {
     // get all services
     app.get('/services', async (req, res) => {
       const email = req.query.email;
-        let query = {};
-        if (email) {
-          query.provider_email = email;
-        }
-        const limit = parseInt(req.query.limit) || 0;
-        const result = await serviceCollection.find(query).limit(limit).toArray();
-        res.send(result)
-      
+      let query = {};
+      if (email) {
+        query.provider_email = email;
+      }
+      const limit = parseInt(req.query.limit) || 0;
+      const result = await serviceCollection.find(query).limit(limit).toArray();
+      res.send(result)
+
     })
 
 
@@ -83,8 +83,32 @@ async function run() {
     // delete a specific service
     app.delete('/services/:service', async (req, res) => {
       const service = req.params.service;
-      const query = {_id: new ObjectId(service)};
+      const query = { _id: new ObjectId(service) };
       const result = await serviceCollection.deleteOne(query);
+      res.send(result);
+    })
+
+
+    // update service
+    app.patch('/service/:id', async (req, res) => {
+      const newService = req.body;
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedService = {
+        $set: newService
+      }
+      const result = await serviceCollection.updateOne(query, updatedService, options);
+      res.send(result);
+
+    })
+
+
+    // get all booked services booked by a user
+    app.get('/booked/services', async (req, res) => {
+      const user = req.query.user;
+      const query = {userEmail: user};
+      const result = await bookingCollection.find(query).toArray();
       res.send(result);
     })
 
