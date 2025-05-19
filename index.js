@@ -107,10 +107,18 @@ async function run() {
     // get all booked services booked by a user
     app.get('/booked/services', async (req, res) => {
       const user = req.query.user;
-      const query = {userEmail: user};
+      const provider = req.query.provider;
+      const query = {};
+      if(user){
+        query.userEmail = user;
+      }
+      else{
+        query.providerEmail = provider;
+      }
       const result = await bookingCollection.find(query).toArray();
       res.send(result);
     })
+
 
   } finally {
     // Ensures that the client will close when you finish/error
