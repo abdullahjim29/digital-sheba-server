@@ -109,13 +109,27 @@ async function run() {
       const user = req.query.user;
       const provider = req.query.provider;
       const query = {};
-      if(user){
+      if (user) {
         query.userEmail = user;
       }
-      else{
+      else {
         query.providerEmail = provider;
       }
       const result = await bookingCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+    // update status
+    app.patch('/booked-service/update-status/:id', async (req, res) => {
+      const {serviceStatus} = req.body;
+      console.log(serviceStatus);
+      const bookedServiceId = req.params.id;
+      const query = { _id:  new ObjectId(bookedServiceId)};
+      const updatedStatus = {
+        $set: {serviceStatus}
+      }
+      const result = await bookingCollection.updateOne(query, updatedStatus);
       res.send(result);
     })
 
