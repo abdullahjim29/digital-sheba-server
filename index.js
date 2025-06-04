@@ -9,21 +9,18 @@ const app = express();
 
 app.use(cors({
   origin:
-    [
-      'http://localhost:5173',
-    ],
+    ['http://localhost:5173',],
   credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
 
 
-// verify jwt token
+// middleware to verify jwt token
 const verifyToken = (req, res, next) => {
   const token = req?.cookies?.token;
-
   if (!token) {
-    return res.starus(401).send({ message: 'Unauthorized accsess' })
+    return res.status(401).send({ message: 'Unauthorized accsess' })
   }
   jwt.verify(token, process.env.JSON_ACCESS_SECRET_TOKEN, (err, decodded) => {
     if (err) {
@@ -33,6 +30,7 @@ const verifyToken = (req, res, next) => {
     next();
   })
 }
+
 
 // mongodb connection
 
@@ -92,19 +90,23 @@ async function run() {
     })
 
 
-    // all APIs
-
     // get all services
     app.get('/services', async (req, res) => {
-      const email = req.query.email;
-      let query = {};
-      if (email) {
-        query.provider_email = email;
-      }
       const limit = parseInt(req.query.limit) || 0;
-      const result = await serviceCollection.find(query).limit(limit).toArray();
+      const result = await serviceCollection.find().limit(limit).toArray();
       res.send(result)
+    })
 
+
+    // manage services api
+    app.get('/manage-services', verifyToken, async (req, res) => {
+      const email = req.query.email;
+      const query = { provider_email: email };
+      if (req.user?.email !== email) {
+        return res.status(403).send({ message: 'Forbidden accsess' })
+      }
+      const result = await serviceCollection.find(query).toArray();
+      res.send(result);
     })
 
 
@@ -158,14 +160,20 @@ async function run() {
 
 
     // get all booked services booked by a user
-    app.get('/booked/services', async (req, res) => {
+    app.get('/booked/services', verifyToken, async (req, res) => {
       const user = req.query.user;
       const provider = req.query.provider;
       const query = {};
       if (user) {
+        if (req.user?.email !== user) {
+          return res.status(403).send({ message: 'Forbidden accsess' })
+        }
         query.userEmail = user;
       }
       else {
+        if (req.user?.email !== provider) {
+          return res.status(403).send({ message: 'Forbidden accsess' })
+        }
         query.providerEmail = provider;
       }
       const result = await bookingCollection.find(query).toArray();
