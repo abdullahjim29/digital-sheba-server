@@ -1,16 +1,24 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin:
+    [
+      'http://localhost:5173',
+    ],
+  credentials: true,
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 
 // mongodb connection
-
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.orsq4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -37,6 +45,23 @@ async function run() {
 
     // created service booking collection
     const bookingCollection = client.db('bookingDB').collection('booking');
+
+
+    // auth related APIs
+
+    app.post('/jwt', (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.JSON_ACCESS_SECRET_TOKEN, {
+        expiresIn: '5h'
+      })
+
+      res
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: false,
+        })
+        .send({ sucsess: true })
+    })
 
 
     // all APIs
@@ -122,12 +147,11 @@ async function run() {
 
     // update status
     app.patch('/booked-service/update-status/:id', async (req, res) => {
-      const {serviceStatus} = req.body;
-      console.log(serviceStatus);
+      const { serviceStatus } = req.body;
       const bookedServiceId = req.params.id;
-      const query = { _id:  new ObjectId(bookedServiceId)};
+      const query = { _id: new ObjectId(bookedServiceId) };
       const updatedStatus = {
-        $set: {serviceStatus}
+        $set: { serviceStatus }
       }
       const result = await bookingCollection.updateOne(query, updatedStatus);
       res.send(result);
