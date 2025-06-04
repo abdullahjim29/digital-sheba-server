@@ -49,6 +49,7 @@ async function run() {
 
     // auth related APIs
 
+    // create a jwt token
     app.post('/jwt', (req, res) => {
       const user = req.body;
       const token = jwt.sign(user, process.env.JSON_ACCESS_SECRET_TOKEN, {
@@ -61,6 +62,17 @@ async function run() {
           secure: false,
         })
         .send({ sucsess: true })
+    })
+
+
+    // clear jwt token when user will log-out
+    app.post('logout', (req, res) => {
+      res
+        .clearCookie('token', {
+          httpOnly: true,
+          secure: false, // for localhost
+        })
+        .send({ succsess: true })
     })
 
 
