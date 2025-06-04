@@ -18,6 +18,22 @@ app.use(express.json());
 app.use(cookieParser());
 
 
+// verify jwt token
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token;
+
+  if (!token) {
+    return res.starus(401).send({ message: 'Unauthorized accsess' })
+  }
+  jwt.verify(token, process.env.JSON_ACCESS_SECRET_TOKEN, (err, decodded) => {
+    if (err) {
+      return res.status(401).send({ message: 'Unauthorized accsess' })
+    }
+    req.user = decodded;
+    next();
+  })
+}
+
 // mongodb connection
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.orsq4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -66,7 +82,7 @@ async function run() {
 
 
     // clear jwt token when user will log-out
-    app.post('logout', (req, res) => {
+    app.post('/remove-token', (req, res) => {
       res
         .clearCookie('token', {
           httpOnly: true,
