@@ -92,8 +92,13 @@ async function run() {
 
     // get all services
     app.get('/services', async (req, res) => {
+      const searchParams = req.query.searchParams;
+      let query = {};
+      if (searchParams) {
+        query = { service: { $regex: searchParams, $options: "i" } }
+      }
       const limit = parseInt(req.query.limit) || 0;
-      const result = await serviceCollection.find().limit(limit).toArray();
+      const result = await serviceCollection.find(query).limit(limit).toArray();
       res.send(result)
     })
 
