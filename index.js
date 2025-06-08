@@ -61,6 +61,10 @@ async function run() {
     const bookingCollection = client.db('bookingDB').collection('booking');
 
 
+    // testimonial collection
+    const testimonialColection = client.db('testimonialDB').collection('testimonial');
+
+
     // auth related APIs
 
     // create a jwt token
@@ -195,6 +199,21 @@ async function run() {
         $set: { serviceStatus }
       }
       const result = await bookingCollection.updateOne(query, updatedStatus);
+      res.send(result);
+    })
+
+    
+    // add testimonial
+    app.post('/add-testimonial', async (req, res) => {
+      const testimonial = req.body;
+      const result = await testimonialColection.insertOne(testimonial);
+      res.send(result);
+    })
+
+
+    // get testimonials
+    app.get('/testimonials', async (req, res) => {
+      const result = await testimonialColection.find().toArray();
       res.send(result);
     })
 
